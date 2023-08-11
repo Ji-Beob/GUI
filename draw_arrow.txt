@@ -1,0 +1,123 @@
+# https://gaussian37.github.io/math-la-rotation_matrix/
+def rotate_coordinate(y, x, base_y, base_x, theta):
+    y_ = (y-base_y)*math.cos(-theta) - (x-base_x)*math.sin(-theta) + base_y
+    x_ = (y-base_y)*math.sin(-theta) + (x-base_x)*math.cos(-theta) + base_x
+    return y_, x_
+
+
+############# 가정 ##############
+# Sharp arrow의 방향축 길이 = 35 #
+# Sharp arrow의 높이축 길이 = 20 #
+# Break arrow의 방향축 길이 = 20 #
+# Break arrow의 높이축 길이 = 50 #
+#################################
+def write_csv_arrow(wr, line_array, ClassNum_sharp, ClassNum_break, content=False):
+    LabelNum = 8
+
+    for line in line_array:
+        if (len(line) != 1):
+            yStart, xStart, yEnd, xEnd = line[0]['edge']
+            for cnt in range(len(line)-1):
+                arrow_dir = int(line[cnt+1]['direction'])
+                arrow_loc = float(line[cnt+1]['location'])
+                if (line[cnt+1]['type'] == 'sharp_arrow'):
+                    arrow_d = 35
+                    arrow_h = 20
+                    # vertical line
+                    if (yStart == yEnd):
+                        arrow_base_y = yStart
+                        arrow_base_x = xStart + arrow_loc*(xEnd-xStart)
+                        theta = math.pi/2
+                    # horizontal line
+                    elif (xStart == xEnd):
+                        arrow_base_y = yStart + arrow_loc*(yEnd-yStart)
+                        arrow_base_x = xStart
+                        theta = math.pi
+                    # diagonal line
+                    else:
+                        arrow_base_y = yStart + arrow_loc*(yEnd-yStart)
+                        arrow_base_x = xStart + arrow_loc*(xEnd-xStart)
+                        theta = math.pi - math.atan((xEnd-xStart)/(yEnd-yStart))
+                    
+                    UpperLeft_y = arrow_base_y - arrow_d
+                    UpperLeft_x = arrow_base_x - arrow_h/2
+                    LowerLeft_y = arrow_base_y - arrow_d
+                    LowerLeft_x = arrow_base_x + arrow_h/2
+                    LowerRight_y = arrow_base_y
+                    LowerRight_x = arrow_base_x + arrow_h/2
+                    UpperRight_y = arrow_base_y
+                    UpperRight_x = arrow_base_x - arrow_h/2
+
+                    if (arrow_dir == 0):
+                        RotAngle = theta
+                    elif (arrow_dir == 1):
+                        RotAngle = theta+math.pi
+                    
+                    UpperLeft_y_, UpperLeft_x_ = rotate_coordinate(UpperLeft_y, UpperLeft_x, arrow_base_y, arrow_base_x, RotAngle)
+                    LowerLeft_y_, LowerLeft_x_ = rotate_coordinate(LowerLeft_y, LowerLeft_x, arrow_base_y, arrow_base_x, RotAngle)
+                    LowerRight_y_, LowerRight_x_ = rotate_coordinate(LowerRight_y, LowerRight_x, arrow_base_y, arrow_base_x, RotAngle)
+                    UpperRight_y_, UpperRight_x_ = rotate_coordinate(UpperRight_y, UpperRight_x, arrow_base_y, arrow_base_x, RotAngle)
+
+                    arrow_min = (int(min(UpperLeft_y_, LowerLeft_y_, LowerRight_y_, UpperRight_y_)), int(min(UpperLeft_x_, LowerLeft_x_, LowerRight_x_, UpperRight_x_)))
+                    arrow_max = (int(max(UpperLeft_y_, LowerLeft_y_, LowerRight_y_, UpperRight_y_)), int(max(UpperLeft_x_, LowerLeft_x_, LowerRight_x_, UpperRight_x_)))
+
+                    if content:
+                        for x in list(range(arrow_min[1], arrow_max[1])):
+                            for y in list(range(arrow_min[0], arrow_max[0])):
+                                wr.writerow([y, x, ClassNum_sharp, LabelNum])
+                    elif not content:
+                        for y in list(range(arrow_min[0], arrow_max[0]+1)):
+                            wr.writerow([y, arrow_min[1], ClassNum_sharp, LabelNum])
+                            wr.writerow([y, arrow_max[1], ClassNum_sharp, LabelNum])
+                        for x in list(range(arrow_min[1]+1, arrow_max[1])):
+                            wr.writerow([arrow_min[0], x, ClassNum_sharp, LabelNum])
+                            wr.writerow([arrow_max[0], x, ClassNum_sharp, LabelNum])
+
+                elif (line[cnt+1]['type'] == 'break'):
+                    arrow_d = 20
+                    arrow_h = 50
+                    # vertical line
+                    if (yStart == yEnd):
+                        theta = math.pi/2
+                    # horizontal line
+                    elif (xStart == xEnd):
+                        theta = 0
+                    # diagonal line
+                    else:
+                        theta = -math.atan((xEnd-xStart)/(yEnd-yStart))
+                    
+                    if (arrow_loc == 0):
+                        arrow_base_y = yStart
+                        arrow_base_x = xStart
+                    elif (arrow_loc == 1):
+                        arrow_base_y = yEnd
+                        arrow_base_x = xStart
+                    UpperLeft_y = arrow_base_y - arrow_d/2
+                    UpperLeft_x = arrow_base_x - arrow_h/2
+                    LowerLeft_y = arrow_base_y - arrow_d/2
+                    LowerLeft_x = arrow_base_x + arrow_h/2
+                    LowerRight_y = arrow_base_y + arrow_d/2
+                    LowerRight_x = arrow_base_x + arrow_h/2
+                    UpperRight_y = arrow_base_y + arrow_d/2
+                    UpperRight_x = arrow_base_x - arrow_h/2
+
+                    RotAngle = theta
+                    
+                    UpperLeft_y_, UpperLeft_x_ = rotate_coordinate(UpperLeft_y, UpperLeft_x, arrow_base_y, arrow_base_x, RotAngle)
+                    LowerLeft_y_, LowerLeft_x_ = rotate_coordinate(LowerLeft_y, LowerLeft_x, arrow_base_y, arrow_base_x, RotAngle)
+                    LowerRight_y_, LowerRight_x_ = rotate_coordinate(LowerRight_y, LowerRight_x, arrow_base_y, arrow_base_x, RotAngle)
+                    UpperRight_y_, UpperRight_x_ = rotate_coordinate(UpperRight_y, UpperRight_x, arrow_base_y, arrow_base_x, RotAngle)
+
+                    arrow_min = (int(min(UpperLeft_y_, LowerLeft_y_, LowerRight_y_, UpperRight_y_)), int(min(UpperLeft_x_, LowerLeft_x_, LowerRight_x_, UpperRight_x_)))
+                    arrow_max = (int(max(UpperLeft_y_, LowerLeft_y_, LowerRight_y_, UpperRight_y_)), int(max(UpperLeft_x_, LowerLeft_x_, LowerRight_x_, UpperRight_x_)))
+
+                    if content:
+                        for x in list(range(arrow_min[1], arrow_max[1])):
+                            for y in list(range(arrow_min[0], arrow_max[0])):
+                                wr.writerow([y, x, ClassNum_break, LabelNum])
+                    elif not content:
+                        for y in list(range(arrow_min[0], arrow_max[0]+1)):
+                            wr.writerow([y, arrow_min[1], ClassNum_break, LabelNum])
+                            wr.writerow([y, arrow_max[1], ClassNum_break, LabelNum])
+                        for x in list(range(arrow_min[1]+1, arrow_max[1])):
+                            wr.writerow([arrow_min[0], x, ClassNum_break, LabelNum])
