@@ -26,7 +26,7 @@ class SceneView(QGraphicsView):
         # View 객체에 scene 요소들 넣기
         self.symbol_line_scene = GraphicsScene(self.bndboxList, self.lineList, self.arrowList)
         self.symbol_line_scene.Set_image(backgroundimg)
-        self.setScene(self.symbol_line_scene)            
+        self.setScene(self.symbol_line_scene)
 
         # 도면 설정
         self.setDragMode(QGraphicsView.ScrollHandDrag)
